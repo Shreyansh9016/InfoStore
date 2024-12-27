@@ -6,6 +6,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
@@ -19,6 +20,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -38,7 +40,7 @@ class MainActivity : AppCompatActivity() {
                     builder1.setIcon(R.drawable.baseline_double_arrow_24)
                     builder1.setPositiveButton("Yes",DialogInterface.OnClickListener { dialogInterface, i ->
 
-                    val user = Users(username, name, password, email)
+                    val user = User(username, name, password, email)
                     database = FirebaseDatabase.getInstance().getReference("Users")
                     database.child(username).setValue(user).addOnSuccessListener {
                         clearFields()

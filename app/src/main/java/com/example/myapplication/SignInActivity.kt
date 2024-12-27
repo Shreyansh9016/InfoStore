@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -32,52 +33,30 @@ class SignInActivity : AppCompatActivity() {
 
         val signInButton = findViewById<Button>(R.id.signbtn)
         val username = findViewById<TextInputEditText>(R.id.usernamee)
+        val password = findViewById<TextInputEditText>(R.id.pass)
         val checkbox = findViewById<CheckBox>(R.id.checkbtn)
-        val select = findViewById<Button>(R.id.select)
-        val selectagain = findViewById<Button>(R.id.selectagain)
-        select.setOnClickListener {
-            val options= arrayOf("Student","Teacher","Others")
-            val builder2=AlertDialog.Builder(this)
-            builder2.setTitle("Select Type")
-            builder2.setSingleChoiceItems(options,0,DialogInterface.OnClickListener { dialog, which ->
-                Toast.makeText(this,"You Clicked on ${options[which]}",Toast.LENGTH_SHORT).show()
-            })
-            builder2.setPositiveButton("Submit",DialogInterface.OnClickListener { dialogInterface, i ->
 
-            })
-            builder2.setNegativeButton("Decline",DialogInterface.OnClickListener { dialogInterface, i ->
 
-            })
-            builder2.show()
-        }
-        selectagain.setOnClickListener {
-            val options= arrayOf("Rasmalai","Laddu","Others")
-            val builder2=AlertDialog.Builder(this)
-            builder2.setTitle("Select Type")
-            builder2.setMultiChoiceItems(options,null,DialogInterface.OnMultiChoiceClickListener { dialog, which ,isChecked->
-                Toast.makeText(this,"You Clicked on ${options[which]}",Toast.LENGTH_SHORT).show()
-            })
-            builder2.setPositiveButton("Submit",DialogInterface.OnClickListener { dialogInterface, i ->
-
-            })
-            builder2.setNegativeButton("Decline",DialogInterface.OnClickListener { dialogInterface, i ->
-
-            })
-            builder2.show()
-        }
 
         signInButton.setOnClickListener {
             val uniqueID = username.text.toString()
+            val uniquePass = password.text.toString()
 
-            if(uniqueID.isNotEmpty() && checkbox.isChecked)
+            if(uniqueID.isNotEmpty() && checkbox.isChecked && uniquePass.isNotEmpty())
             {
-
-                readData(uniqueID)
-
+                readData(uniqueID,uniquePass)
+            }
+            else if(uniquePass.isEmpty() && uniqueID.isEmpty())
+            {
+                Toast.makeText(this,"Please enter username and password", Toast.LENGTH_SHORT).show()
             }
             else if(uniqueID.isEmpty())
             {
-                Toast.makeText(this,"Please Enter username",Toast.LENGTH_SHORT).show()
+                Toast.makeText(this,"Please enter username ", Toast.LENGTH_SHORT).show()
+            }
+            else if(uniquePass.isEmpty())
+            {
+                Toast.makeText(this,"Please enter password", Toast.LENGTH_SHORT).show()
             }
             else
             {
@@ -88,37 +67,77 @@ class SignInActivity : AppCompatActivity() {
 
     }
 
-    private fun readData(uniqueID: String) {
-        databaseReference= FirebaseDatabase.getInstance().getReference("Users")
-        val checkbox = findViewById<CheckBox>(R.id.checkbtn)
+//    private fun readData(uniqueID: String) {
+//        databaseReference = FirebaseDatabase.getInstance().getReference("Users")
+//        val checkbox = findViewById<CheckBox>(R.id.checkbtn)
+//        val loadingDialog = ProgressDialog(this).apply {
+//            setMessage("Fetching user data...")
+//            setCancelable(false)
+//            show()
+//        }
+//
+//        databaseReference.child(uniqueID).get().addOnSuccessListener {
+//            loadingDialog.dismiss()
+//            clearFields()
+//            if (it.exists()) {
+//                val email = it.child("email").value
+//                val name = it.child("name").value
+//                val userid = it.child("username").value
+//
+//                val intentWelcome = Intent(this, HomeActivity::class.java).apply {
+//                    putExtra(KEY2, name.toString())
+//                }
+//                startActivity(intentWelcome)
+//                checkbox.isChecked = false
+//            } else {
+//                Toast.makeText(this, getString(R.string.user_not_found), Toast.LENGTH_SHORT).show()
+//            }
+//        }.addOnFailureListener {
+//            loadingDialog.dismiss()
+//            Toast.makeText(this, getString(R.string.database_error_message), Toast.LENGTH_SHORT).show()
+//        }
+//    }
+private fun readData(uniqueID: String, uniquePass: String) {
+    databaseReference = FirebaseDatabase.getInstance().getReference("Users")
+    val checkbox = findViewById<CheckBox>(R.id.checkbtn)
 
-        databaseReference.child(uniqueID).get().addOnSuccessListener {
-            clearFields()
-            if(it.exists())
-            {
-                val email=it.child("email").value
-                val name=it.child("name").value
-                val userid=it.child("username").value
+    val loadingDialog = ProgressDialog(this).apply {
+        setMessage("Fetching user data...")
+        setCancelable(true)
+        show()
+    }
+    // Querying for the user with the given uniqueID
+    databaseReference.child(uniqueID).get().addOnSuccessListener {
+        clearFields()
 
+        if (it.exists()) {
+            // Get the password and compare with the entered password
+            val storedPass = it.child("password").value.toString() // Assuming "password" is the key for password
+            if (storedPass == uniquePass) {
+                val name = it.child("name").value
+                val username = it.child("username").value
                 val intentwelcome = Intent(this, HomeActivity::class.java)
-                intentwelcome.putExtra(KEY1,email.toString())
-                intentwelcome.putExtra(KEY2,name.toString())
-                intentwelcome.putExtra(KEY3,userid.toString())
+                intentwelcome.putExtra(KEY2, name.toString())
+                intentwelcome.putExtra(KEY3, username.toString())
                 startActivity(intentwelcome)
                 checkbox.isChecked = false
-
-
+            } else {
+                Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show()
             }
-            else{
-                Toast.makeText(this,"User not Found",Toast.LENGTH_SHORT).show()
-            }
-
-        }.addOnFailureListener {
-            Toast.makeText(this,"Its not U its us",Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "User not Found", Toast.LENGTH_SHORT).show()
         }
+
+    }.addOnFailureListener {
+        loadingDialog.dismiss()
+        Toast.makeText(this, "Error occurred. Please try again.", Toast.LENGTH_SHORT).show()
     }
+}
+
     private fun clearFields() {
         val username = findViewById<TextInputEditText>(R.id.usernamee)
+        val password = findViewById<TextInputEditText>(R.id.pass)
         username.text?.clear()
+        password.text?.clear()
     }
 }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="user_not_found">User Not Found</string>
+    <string name="database_error_message">database error message</string>
 </resources>
