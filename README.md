@@ -1,6 +1,6 @@
 InfoStore
 
--->InfoStore is a user-friendly app designed to securely store and manage user details and tasks efficiently.
+\n-->InfoStore is a user-friendly app designed to securely store and manage user details and tasks efficiently.
 -->Users can sign up, log in, and seamlessly add, view, and track their tasks in an organized manner.
 -->Powered by Firebase for real-time database functionality, InfoStore ensures a smooth and responsive user experience.
 
